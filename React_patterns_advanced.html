@@ -1,0 +1,881 @@
+<!DOCTYPE html>
+<html lang="fa">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>React Patterns Guide</title>
+  <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="./prism-tomorrow.min.css" />
+  <link rel="stylesheet" href="./prism-one-dark.min.css" />
+</head>
+
+<body>
+  <div class="container">
+    <div class="header">
+     
+      <div class="logo">MK</div>
+     
+      <div>
+         <small>
+           <sup>Majid Kamali</sup>
+         </small>
+       
+        <h1>راهنمای React</h1>
+        <div class="p-note">
+          Context , Reducer , Redux , React Query , React Hook Form , Custom
+          Hooks,...
+        </div>
+      </div>
+    </div>
+  
+       <ul class="list">
+        <li class="list-item">
+          <bold>1</bold>-
+          <a class="list-link"  href="#Context">Context</a>
+        </li>
+        <li class="list-item">
+          <bold>2</bold>-
+          <a class="list-link" href="#ContextReducer">Context + Reducer</a>
+        </li>
+        <li class="list-item">
+          <bold>3</bold>-
+          <a class="list-link" href="#ContextCustomHook">Context + Custom Hook</a>
+        </li>
+        <li class="list-item">
+          <bold>4</bold>-
+          <a class="list-link" href="#ContextReducerCustomhook">Context + Reducer+ Custom hook</a>
+        </li>
+        <li class="list-item">
+          <bold>5</bold>-
+          <a class="list-link" href="#ReduxToolkitcreateSlice">Redux Toolkit createSlice</a>
+        </li>
+        <li class="list-item">
+          <bold>6</bold>-
+          <a class="list-link" href="#ReduxToolkitCreateApi">Redux Toolkit createApi</a>
+        </li>
+        <li class="list-item">
+          <bold>7</bold>-
+          <a class="list-link" href="#ReactQuery">React Query</a>
+        </li>
+        <li class="list-item">
+          <bold>8</bold>-
+          <a class="list-link" href="#ReactHookForm">React Hook Form</a>
+        </li>
+        <li class="list-item">
+          <bold>9</bold>-
+          <a class="list-link" href="#CustomHook">Custom Hook</a>
+        </li>
+        <li class="list-item">
+          <bold>10</bold>-
+          <a class="list-link" href="#AbortController">AbortController</a>
+        </li>
+        <li class="list-item">
+          <bold>11</bold>-
+          <a class="list-link" href="#AuthAndRole">auth and role</a>
+        </li>
+      </ul>
+   
+    <!-- Context -->
+    <div class="section" id="Context">
+      <h2>Context — معرفی، نکات و مثال</h2>
+      <p>
+        <strong>کاربرد:</strong> انتقال داده بین کامپوننت‌ها بدون Prop
+        Drilling
+      </p>
+      <p><strong>نکات مهم:</strong></p>
+      <ul>
+        <li>برای Global State سبک عالی است.</li>
+        <li>
+          برای داده‌هایی که زیاد تغییر می‌کنند مناسب نیست (باعث Re-render زیاد
+          می‌شود).
+        </li>
+        <li>با useReducer ترکیب شود بهتر است.</li>
+      </ul>
+
+      <pre class="code">
+          <code class="language-js">
+                // ساخت Context ساده
+                const MyContext = createContext();
+
+                function App() {
+                  const [value, setValue] = useState("example");
+
+                  return (
+                    &lt;MyContext.Provider value={{ value, setValue }}&gt;
+                      &lt;Child /&gt;
+                    &lt;/MyContext.Provider&gt;
+                  );
+                }
+
+                function Child() {
+                  const { value } = useContext(MyContext);
+                  return &lt;div&gt;{value}&lt;/div&gt;;
+                }
+          </code>
+        </pre>
+    </div>
+
+    <!-- Context + Reducer -->
+    <div class="section" id="ContextReducer">
+      <h2>Context + Reducer — الگوی حرفه‌ای</h2>
+      <p>
+        <strong>کاربرد:</strong> جایگزین جمع‌وجور Redux برای پروژه‌های متوسط
+      </p>
+      <p><strong>نکات:</strong></p>
+      <ul>
+        <li>State و Action ها قابل مدیریت‌تر می‌شوند.</li>
+        <li>امکان تفکیک لایه‌های برنامه فراهم می‌شود.</li>
+      </ul>
+
+      <pre class="code">
+          <code class="language-js">
+          const CounterContext = createContext();
+
+          const reducer = (state, action) => {
+            switch(action.type){
+              case "inc": return state + 1;
+              case "dec": return state - 1;
+              default: return state;
+            }
+          };
+
+          function CounterProvider({children}) {
+            const [state, dispatch] = useReducer(reducer, 0);
+
+            return (
+              &lt;CounterContext.Provider value={{state, dispatch}}&gt;
+                {children}
+              &lt;/CounterContext.Provider&gt;
+            );
+          }
+        </code>
+        </pre>
+    </div>
+
+    <!-- Context + Custom Hook -->
+    <div class="section" id="ContextCustomHook">
+      <h2>Context + Custom Hook — الگوی حرفه‌ای</h2>
+      <p>
+        <strong>کاربرد:</strong> جایگزین جمع‌وجور Redux برای پروژه‌های متوسط
+      </p>
+      <p><strong>نکات:</strong></p>
+      <ul>
+        <li>State و Action ها قابل مدیریت‌تر می‌شوند.</li>
+        <li>امکان تفکیک لایه‌های برنامه فراهم می‌شود.</li>
+      </ul>
+      <h3>shopContext.jsx</h3>
+      <pre class="code">
+          <code class="language-js">
+                import { createContext } from "react";
+                import { useCart } from "../hook/useCart";
+
+                export const shopContext = createContext({
+                    cartItems: null,
+                    addToCard: () => { },
+                    removeFromCart: () => { },
+                    resetCart: () => { }
+                });
+
+                export const ShopContextProvider = ({ children }) => {
+                    return (
+                        <shopContext.Provider value={useCart()} >
+                            {children}
+                        </shopContext.Provider>
+                    )
+                }
+         </code>
+        </pre>
+
+      <h3>Custom hook => useCart.js</h3>
+      <pre class="code">
+          <code class="language-js">
+            import { useEffect, useState } from "react";
+
+                export const useCart = () => {
+                    const [cartItems, setCartItems] = useState();
+
+                    useEffect(() => {
+                        if (cartItems != undefined) {
+                            localStorage.setItem('cartItem', JSON.stringify(cartItems));
+                        }
+                    }, [cartItems])
+
+                    useEffect(() => {
+                        const cartItemData = JSON.parse(localStorage.getItem('cartItem'));
+                        setCartItems(!!cartItemData ? cartItemData : [])
+                    }, [])
+
+                    const addToCard = (itemId) => {
+                        if (!cartItems?.find((item) => item.id === itemId)) {
+                            setCartItems([...cartItems, { id: itemId, count: 1 }])
+                        } else {
+                            setCartItems(cartItems.map(item => {
+                                if (item.id === itemId) {
+                                    return { ...item, count: item.count + 1 }
+                                } else {
+                                    return item
+                                }
+                            }))
+                        }
+                    }
+
+                    const removeFromCart = (itemId) => {
+                        setCartItems(cartItems.map(item => {
+                            if (item.id === itemId) {
+                                return { ...item, count: item.count === 0 ? 0 : item.count - 1 }
+                            } else {
+                                return item;
+                            }
+                        }))
+                    }
+
+                    const resetCart = () => {
+                        setCartItems();
+                        localStorage.removeItem('cartItem')
+                    }
+
+                    return { cartItems, addToCard, removeFromCart,resetCart }
+                }
+          </code>
+        </pre>
+
+      <h3>App.js</h3>
+      <pre class="code">
+          <code class="language-js">
+            <xmp>
+             function App() {
+                return (
+                <div className="App">
+                  <ShopContextProvider>
+                    <BrowserRouter>
+                      <Welcome />
+                      <Nav />
+
+                      <Routes>
+                        <Route path='/' element={<Shop />} />
+                        <Route path='/cart' element={<Cart />} />
+                      </Routes>
+                    </BrowserRouter>
+                  </ShopContextProvider>
+                </div>
+                )
+              }
+            </xmp>
+          </code>
+        </pre>
+    </div>
+
+    <!-- Context + Reducer+ Custom hook -->
+    <div class="section" id="ContextReducerCustomhook">
+      <h2>Context + Reducer+ Custom hook — الگوی حرفه‌ای</h2>
+      <p>
+        <strong>کاربرد:</strong> جایگزین جمع‌وجور Redux برای پروژه‌های متوسط
+      </p>
+      <p><strong>نکات:</strong></p>
+      <ul>
+        <li>State و Action ها قابل مدیریت‌تر می‌شوند.</li>
+        <li>امکان تفکیک لایه‌های برنامه فراهم می‌شود.</li>
+      </ul>
+
+      <h3>auth-context.jsx</h3>
+      <pre class="code">
+          <code class="language-js">
+          import React, { useContext, useReducer } from 'react';
+          import { authReducer, initialState } from './authReducer';
+          const AuthStateContext = React.createContext();
+          const AuthDispatcherContext = React.createContext();
+
+          //hook useAuthState
+          export const useAuthState = () => {
+              const context = useContext(AuthStateContext);
+
+              if (!context) {
+                  throw new Error("useAuthState must be used with a AuthProvider");
+              }
+
+              return context;
+          }
+
+          //hook useAuthDispatch
+          export const useAuthDispatch = () => {
+              const context = useContext(AuthDispatcherContext);
+
+              if (!context) {
+                  throw new Error("AuthDispatcherContext must be used with a AuthProvider");
+              }
+            
+              return context;
+          }
+
+          export function AuthProvider({ children }) {
+              const [state, dispatch] = useReducer(authReducer, initialState);
+              
+              return (
+                <xmp>
+                  <AuthStateContext.Provider value={state}>
+                      <AuthDispatcherContext.Provider value={dispatch}>
+                          {children}
+                      </AuthDispatcherContext.Provider>
+                  </AuthStateContext.Provider>
+                </xmp>
+              )
+          }
+          </code>
+        </pre>
+
+      <h3>authReducer.js</h3>
+      <pre class="code">
+          <code class="language-js">
+            export const authTypes = {
+            LOGIN_REQUEST: 'LOGIN_REQUEST',
+            LOGIN_SUCCESS: 'LOGIN_SUCCESS',
+            LOGIN_ERROR: 'LOGIN_ERROR',
+            LOGOUT: 'LOGOUT'
+        }
+
+        export const initialState = {
+            user: null,
+            token: null,
+            loading: false,
+            error: null
+        }
+
+        export const authReducer = (state, action) => {
+            switch (action.type) {
+                case authTypes.LOGIN_REQUEST:
+                    return {
+                        ...state,
+                        user: null,
+                        token: null,
+                        loading: true,
+                        error: null
+                    }
+                case authTypes.LOGIN_SUCCESS:
+                    const { user, token } = action.payload
+                    return {
+                        ...state,
+                        user: user,
+                        token: token,
+                        loading: false,
+                    }
+                case authTypes.LOGIN_ERROR:
+                    return {
+                        ...state,
+                        user: null,
+                        token: null,
+                        loading: false,
+                        error: action.payload.error
+                    }
+                case authTypes.LOGOUT:
+                    return {
+                        ...state,
+                        user: null,
+                        token: null,
+                        loading: false,
+                        error: null
+                    }
+                default:
+                    return state;
+            }
+        }
+          </code>
+        </pre>
+
+      <h3>Main.js</h3>
+      <pre class="code">
+          <code class="language-js">
+            <xmp>
+              createRoot(document.getElementById('root')).render(
+                <StrictMode>
+                  <AuthProvider>
+                    <RouterProvider router={router} />
+                  </AuthProvider>
+                </StrictMode>,
+              )
+            </xmp>
+            
+
+
+
+
+
+          </code>
+        </pre>
+    </div>
+
+   
+
+    <!-- Redux Toolkit createApi-->
+    <div class="section" id="ReduxToolkitCreateApi">
+      
+      <h2>Redux Toolkit createApi — سینتکس مدرن و حرفه‌ای</h2>
+      <p><strong>کاربرد:</strong> مدیریت State در پروژه‌های بزرگ</p>
+      <p><strong>نکات:</strong></p>
+      <ul>
+        <li>برای مدیریت درخواست‌های سرور و کش کردن داده‌ها</li>
+        <li>ارسال درخواست به سرور (GET, POST, PUT, DELETE)</li>
+        <li>کش کردن داده‌ها (Caching)</li>
+        <li>مدیریت حالت‌ها: loading، success، error</li>
+        <li>refetch خودکار در صورت نیاز</li>
+        <li>هماهنگ نگه داشتن داده بین کامپوننت‌ها</li>
+        <li>
+          <ul>
+            <li>
+              <h3>چه زمانی از createApi باید استفاده کنیم</h3>
+            </li>
+            <li>داده از سرور می‌گیری</li>
+            <li>می‌خواهی داده‌ها کش شوند</li>
+            <li>می‌خواهی loading/error خودکار باشد</li>
+            <li>نیاز به refetch خودکار داری</li>
+            <li>ساختار حرفه‌ای برای API می‌خواهی</li>
+          </ul>
+        </li>
+      </ul>
+
+      <h3>apiSlice.js</h3>
+      <pre class="code">
+          <code class="language-js">
+            import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+
+            export const apiSlice = createApi({
+              reducerPath: "api",
+              baseQuery: fetchBaseQuery({ baseUrl: "http://localhost:3000" }),
+              tagTypes: ["Todos"],
+              endpoints: (builder) => ({
+                getTodos: builder.query({
+                  query: () => "/todos",
+                  transformResponse: (res) => res.sort((a, b) => b.id - a.id),
+                  providesTags: ["Todos"],
+                }),
+                addTodo: builder.mutation({
+                  query: (todo) => ({
+                    url: "/todos",
+                    method: "POST",
+                    body: todo,
+                  }),
+                  invalidatesTags: ["Todos"],
+                }),
+                updateTodo: builder.mutation({
+                  query: (todo) => ({
+                    url: `/todos/${todo.id}`,
+                    method: "PATCH",
+                    body: todo,
+                  }),
+                  invalidatesTags: ["Todos"],
+                }),
+                deleteTodo: builder.mutation({
+                  query: ({ id }) => ({
+                    url: `/todos/${id}`,
+                    method: "DELETE",
+                    body: id,
+                  }),
+                  invalidatesTags: ["Todos"],
+                }),
+              }),
+            });
+
+            export const {
+              useGetTodosQuery,
+              useAddTodoMutation,
+              useUpdateTodoMutation,
+              useDeleteTodoMutation,
+            } = apiSlice;
+
+          </code>
+      </pre>
+
+      <h3>TodoList.jsx</h3>
+      <pre class="code">
+          <code class="language-js">
+            <xmp>
+            import { useState } from "react";
+                import "./todos.css";
+                import {
+                  useGetTodosQuery,
+                  useAddTodoMutation,
+                  useUpdateTodoMutation,
+                  useDeleteTodoMutation,
+                } from "../api/apiSlice";
+
+                export const TodoList = () => {
+                  const [newTodo, setNewTodo] = useState("");
+
+                  const {
+                    data: todos,
+                    isLoading,
+                    isSuccess,
+                    isError,
+                    error,
+                  } = useGetTodosQuery();
+                  const [addTodo] = useAddTodoMutation();
+                  const [updateTodo] = useUpdateTodoMutation();
+                  const [deleteTodo] = useDeleteTodoMutation();
+
+                  const handleSubmit = (e) => {
+                    addTodo({
+                      userId: 1,
+                      title: newTodo,
+                      completed: false,
+                    });
+                    setNewTodo("");
+                  };
+
+                  const newItemSection = (
+                    <div className="todo-container">
+                      <h1>To-Do List</h1>
+                      <div className="task-input-area">
+                        <input
+                          type="text"
+                          id="taskInput"
+                          value={newTodo}
+                          onChange={(e) => setNewTodo(e.target.value)}
+                          placeholder="Add a new task..."
+                        />
+                        <button id="addTaskBtn" onClick={handleSubmit}>
+                          Add Task
+                        </button>
+                      </div>
+                    </div>
+                  );
+
+                  let content;
+                  if (isLoading) {
+                    content = <p>Loading...</p>;
+                  } else if (isSuccess) {
+                    content = todos.map((todo) => {
+                      return (
+                        <li
+                          className={`task-item ${todo.completed ? "completed" : ""}`}
+                          key={todo.id}
+                        >
+                          <span class="task-content">{todo.title}</span>
+                          <div class="task-actions">
+                            <button
+                              class="delete-btn"
+                              onClick={() => deleteTodo({ id: todo.id })}
+                            >
+                              X
+                            </button>
+
+                            <button
+                              class="completed-btn"
+                              onClick={() =>
+                                updateTodo({ ...todo, completed: !todo.completed })
+                              }
+                            >
+                            ✓
+                            </button>
+                          </div>
+                        </li>
+                      );
+                    });
+
+                  } else if (isError) {
+                    content = <p>{error}</p>;
+                  }
+
+                  return (
+                    <main>
+                      <h1>Todo List</h1>
+                        {newItemSection }
+                      <ul id="taskList" className="task-list">
+                        {
+                          content
+                        }
+                      </ul>
+                    </main>
+                  );
+                };
+            </xmp>
+          </code>
+      </pre>
+
+      <h3>Main.jsx</h3>
+      <pre class="code">
+          <code class="language-js">
+            <xmp>
+              import { ApiProvider } from "@reduxjs/toolkit/query/react";
+              import { apiSlice } from "./features/api/apiSlice.js";
+
+              createRoot(document.getElementById("root")).render(
+                <StrictMode>
+                  <ApiProvider api={apiSlice}>
+                    <App />
+                  </ApiProvider>
+                </StrictMode>
+              );
+            </xmp>
+          </code>
+      </pre>
+
+    </div>
+
+    <!-- React Query -->
+    <div class="section" id="ReactQuery">
+      <h2>React Query — مدیریت سرور State</h2>
+      <p>
+        <strong>کاربرد:</strong> فراخوانی API، کش کردن دیتا، مدیریت
+        Loading/Error
+      </p>
+      <p><strong>نکات:</strong></p>
+      <ul>
+        <li>نیازی نیست خودتان useEffect+axios بنویسید.</li>
+        <li>ری‌رندر اضافی ندارد.</li>
+        <li>دیتا کش می‌شود و درخواست‌ها تکرار نمی‌شوند.</li>
+      </ul>
+
+      <pre class="code">
+          <code class="language-js">
+            const { data, isLoading } = useQuery({
+              queryKey: ["users"],
+              queryFn: () => fetch("/api/users").then(res => res.json())
+            });
+          </code>
+        </pre>
+    </div>
+
+    <!-- React Hook Form -->
+    <div class="section" id="ReactHookForm">
+      <h2>React Hook Form — بهترین فرم هندلر در React</h2>
+      <p><strong>نکات:</strong></p>
+      <ul>
+        <li>به شدت سبک و سریع</li>
+        <li>ری‌رندر کم</li>
+        <li>ولیدیشن حرفه‌ای</li>
+      </ul>
+
+      <pre class="code">
+          <code class="language-js">
+          const { register, handleSubmit } = useForm();
+
+          &lt;form onSubmit={handleSubmit(data => console.log(data))}&gt;
+            &lt;input {...register("name")} /&gt;
+            &lt;button&gt;Send&lt;/button&gt;
+          &lt;/form&gt;
+          </code>
+        </pre>
+    </div>
+
+    <!-- Custom Hook -->
+    <div class="section" id="CustomHook">
+      <h2>Custom Hook — استخراج منطق تکراری</h2>
+      <p><strong>کاربرد:</strong> بازاستفاده از منطق</p>
+
+      <pre class="code">
+          <code class="language-js">
+              function useFetch(url){
+                const [data, setData] = useState(null);
+
+                useEffect(() => {
+                  fetch(url).then(res => res.json()).then(setData);
+                }, [url]);
+
+                return data;
+              }
+
+              function App(){
+                const data = useFetch("/api/users");
+                return &lt;pre&gt;{JSON.stringify(data)}&lt;/pre&gt;;
+              }
+          </code>
+        </pre>
+    </div>
+
+    <!-- AbortController  -->
+    <div class="section" id="AbortController">
+      <h2> کنترول و لغو درخواست axios</h2>
+      <p>لغو عملیات های ناهنگام async</p>
+      <strong>توضیح</strong>
+      <p>فرض یک درخواست درحال اجراست : کاربر صفحه را ترک و یا درخواست دیگری انجام دهد</p>
+      <p>در این حالت ادامه درخواست قبل بی فایده است </p>
+      <pre class="code">
+          <code class="language-js">
+              useEffect(() => {
+               
+                const controller = new AbortController();
+
+                const getUsers = async () => {
+                  try {
+                    const response = await axiosPrivate.get("/users", {
+                      signal: controller.signal,
+                    });
+                    console.log(response.data);
+                  } catch (error) {
+                    console.log(error);
+                  }
+                };
+
+                getUsers();
+
+                return () => {
+                  controller.abort();
+                };
+
+              }, []);
+          </code>
+        </pre>
+    </div>
+
+
+     <!-- Auth And Role  -->
+    <div class="section" id="AuthAndRole">
+      <h2>یک مثال ساده از طراحی  Login + Role + Protected Route</h2>
+      <p>Authentication - Route </p>
+      <strong>توضیح</strong>
+      <p>ایجاد یک سیستم احراز هویت به همراه سطح دسترسی کاربران جهت تست</p>
+      <pre class="code">
+          <h3>ساختار ایجاد سیستم</h3>
+          <code class="language-html">
+            Login
+            ↓
+            auth = { user, roles }
+            ↓
+            RequireAuth
+            ↓
+            role check
+            ↓
+            Outlet یا Redirect
+          </code>
+      </pre>
+          <pre class="code">
+          <h3>1️⃣ AuthContext (نگهداری user و role)</h3>
+
+          <code class="language-js">
+             // AuthContext.jsx
+              import { createContext, useContext, useState } from "react";
+
+              const AuthContext = createContext(null);
+
+              export const AuthProvider = ({ children }) => {
+                const [auth, setAuth] = useState(null);
+
+                const login = (username) => {
+                  // شبیه‌سازی پاسخ بک‌اند
+                  const fakeUser = {
+                    user: username,
+                    roles: username === "admin" ? ["ADMIN"] : ["USER"],
+                  };
+                  setAuth(fakeUser);
+                };
+
+                const logout = () => setAuth(null);
+
+                return (
+                  <AuthContext.Provider value={{ auth, login, logout }}>
+                    {children}
+                  </AuthContext.Provider>
+                );
+              };
+
+              export const useAuth = () => useContext(AuthContext);
+
+          </code>
+
+          <h3>2️⃣ Login Page</h3>
+          <code class="language-js">
+             <xmp>
+              // Login.jsx
+              import { useState } from "react";
+              import { useNavigate } from "react-router-dom";
+              import { useAuth } from "./AuthContext";
+
+              const Login = () => {
+                const [username, setUsername] = useState("");
+                const { login } = useAuth();
+                const navigate = useNavigate();
+
+                const handleSubmit = (e) => {
+                  e.preventDefault();
+                  login(username);
+                  navigate("/dashboard");
+                };
+
+                return (
+                  <form onSubmit={handleSubmit}>
+                    <input
+                      placeholder="username (admin or user)"
+                      value={username}
+                      onChange={(e) => setUsername(e.target.value)}
+                    />
+                    <button>Login</button>
+                  </form>
+                );
+              };
+
+              export default Login;
+
+             </xmp>
+          </code>
+
+          <h3>3️⃣ Protected Route (Role-based)</h3>
+          <code class="language-js">
+             // RequireAuth.jsx
+            import { Navigate, Outlet } from "react-router-dom";
+            import { useAuth } from "./AuthContext";
+
+            const RequireAuth = ({ allowedRoles }) => {
+              const { auth } = useAuth();
+
+              if (!auth) {
+                return <Navigate to="/login" replace />;
+              }
+
+              const hasAccess = auth.roles.some((role) =>
+                allowedRoles.includes(role)
+              );
+
+              return hasAccess ? <Outlet /> : <Navigate to="/unauthorized" replace />;
+            };
+
+            export default RequireAuth;
+
+          </code>
+
+
+          <h3>4️⃣ Routes (اتصال role به route)</h3>
+          <code class="language-js">
+              <xmp>
+                // App.jsx
+                import { Routes, Route } from "react-router-dom";
+                import { AuthProvider } from "./AuthContext";
+                import Login from "./Login";
+                import RequireAuth from "./RequireAuth";
+
+                const Dashboard = () => <h2>Dashboard</h2>;
+                const Admin = () => <h2>Admin Panel</h2>;
+                const Unauthorized = () => <h2>403 - Unauthorized</h2>;
+
+                function App() {
+                  return (
+                    <AuthProvider>
+                      <Routes>
+                        <Route path="/login" element={<Login />} />
+
+                        <Route element={<RequireAuth allowedRoles={["USER", "ADMIN"]} />}>
+                          <Route path="/dashboard" element={<Dashboard />} />
+                        </Route>
+
+                        <Route element={<RequireAuth allowedRoles={["ADMIN"]} />}>
+                          <Route path="/admin" element={<Admin />} />
+                        </Route>
+
+                        <Route path="/unauthorized" element={<Unauthorized />} />
+                      </Routes>
+                    </AuthProvider>
+                  );
+                }
+
+                export default App;
+
+              </xmp>
+          </code>
+        
+
+        </pre>
+    </div>
+
+  </div>
+  <script src="./prism.min.js"></script>
+</body>
+
+</html>
