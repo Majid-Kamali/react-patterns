@@ -166,6 +166,7 @@
       <h3>shopContext.jsx</h3>
       <pre class="code">
           <code class="language-js">
+            <xmp>
                 import { createContext } from "react";
                 import { useCart } from "../hook/useCart";
 
@@ -183,8 +184,9 @@
                         </shopContext.Provider>
                     )
                 }
+            </xmp>
          </code>
-        </pre>
+      </pre>
 
       <h3>Custom hook => useCart.js</h3>
       <pre class="code">
@@ -250,7 +252,6 @@
                     <BrowserRouter>
                       <Welcome />
                       <Nav />
-
                       <Routes>
                         <Route path='/' element={<Shop />} />
                         <Route path='/cart' element={<Cart />} />
@@ -277,6 +278,64 @@
         <li>امکان تفکیک لایه‌های برنامه فراهم می‌شود.</li>
       </ul>
 
+      <h3>authReducer.js</h3>
+      <pre class="code">
+          <code class="language-js">
+            export const authTypes = {
+                LOGIN_REQUEST: 'LOGIN_REQUEST',
+                LOGIN_SUCCESS: 'LOGIN_SUCCESS',
+                LOGIN_ERROR: 'LOGIN_ERROR',
+                LOGOUT: 'LOGOUT'
+            }
+
+            export const initialState = {
+                user: null,
+                token: null,
+                loading: false,
+                error: null
+            }
+
+            export const authReducer = (state, action) => {
+                switch (action.type) {
+                    case authTypes.LOGIN_REQUEST:
+                        return {
+                            ...state,
+                            user: null,
+                            token: null,
+                            loading: true,
+                            error: null
+                        }
+                    case authTypes.LOGIN_SUCCESS:
+                        const { user, token } = action.payload
+                        return {
+                            ...state,
+                            user: user,
+                            token: token,
+                            loading: false,
+                        }
+                    case authTypes.LOGIN_ERROR:
+                        return {
+                            ...state,
+                            user: null,
+                            token: null,
+                            loading: false,
+                            error: action.payload.error
+                        }
+                    case authTypes.LOGOUT:
+                        return {
+                            ...state,
+                            user: null,
+                            token: null,
+                            loading: false,
+                            error: null
+                        }
+                    default:
+                        return state;
+                }
+            }
+          </code>
+      </pre>
+      
       <h3>auth-context.jsx</h3>
       <pre class="code">
           <code class="language-js">
@@ -321,65 +380,7 @@
               )
           }
           </code>
-        </pre>
-
-      <h3>authReducer.js</h3>
-      <pre class="code">
-          <code class="language-js">
-            export const authTypes = {
-            LOGIN_REQUEST: 'LOGIN_REQUEST',
-            LOGIN_SUCCESS: 'LOGIN_SUCCESS',
-            LOGIN_ERROR: 'LOGIN_ERROR',
-            LOGOUT: 'LOGOUT'
-        }
-
-        export const initialState = {
-            user: null,
-            token: null,
-            loading: false,
-            error: null
-        }
-
-        export const authReducer = (state, action) => {
-            switch (action.type) {
-                case authTypes.LOGIN_REQUEST:
-                    return {
-                        ...state,
-                        user: null,
-                        token: null,
-                        loading: true,
-                        error: null
-                    }
-                case authTypes.LOGIN_SUCCESS:
-                    const { user, token } = action.payload
-                    return {
-                        ...state,
-                        user: user,
-                        token: token,
-                        loading: false,
-                    }
-                case authTypes.LOGIN_ERROR:
-                    return {
-                        ...state,
-                        user: null,
-                        token: null,
-                        loading: false,
-                        error: action.payload.error
-                    }
-                case authTypes.LOGOUT:
-                    return {
-                        ...state,
-                        user: null,
-                        token: null,
-                        loading: false,
-                        error: null
-                    }
-                default:
-                    return state;
-            }
-        }
-          </code>
-        </pre>
+      </pre>
 
       <h3>Main.js</h3>
       <pre class="code">
@@ -393,12 +394,6 @@
                 </StrictMode>,
               )
             </xmp>
-            
-
-
-
-
-
           </code>
         </pre>
     </div>
